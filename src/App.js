@@ -1,96 +1,83 @@
-import React, { Component } from 'react';
-import './App.css';
+import React, { useState } from "react";
 
-class App extends Component {
-  
-  constructor(props){
-    super(props);
-    this.state = {
-      title: 'React Simple CRUD Application',
-      act: 0,
-      index: '',
-      datas: []
-    }
-  }
+function Todo() {
+  const [todos, setTodos] = useState([]);
+  const [todoInput, setTodoInput] = useState("");
+  const [editInput, setEditInput] = useState("");
+  const [editId, setEditId] = useState(null);
 
-  componentDidMount(){
-    this.refs.name.focus();
-  }
+  const ajouterTodo = () => {
+    if (todoInput.trim() === "") return;
+    const newTodo = { id: Date.now(), text: todoInput };
+    setTodos([...todos, newTodo]);
+    setTodoInput("");
+  };
 
-  fSubmit = (e) =>{
-    e.preventDefault();
-    console.log('try');
-
-    let datas = this.state.datas;
-    let name = this.refs.name.value;
-    let address = this.refs.address.value;
-
-    if (this.state.act === 0) { //new
-      let data = {
-        name, address
-      }
-  
-      datas.push(data); 
-    } else {                    //update
-      let index = this.state.index;
-      datas[index].name = name;
-      datas[index].address = address;
-    }
-
-    this.setState({
-      datas: datas
-    });
-
-    this.refs.myForm.reset();
-    this.refs.name.focus();
-  }
-
-  fRemove = (i) => {
-    let datas  = this.state.datas;
-    datas.splice(i,1);
-    this.setState({
-      datas:datas
-    });
-
-    this.refs.myForm.reset();
-    this.refs.name.focus();
-  }
-  
-  fEdit = (i) => {
-    let data = this.state.datas[i];
-    this.refs.name.value = data.name;
-    this.refs.address.value = data.address;
-
-    this.setState({
-      act: 1,
-      index: i 
-    })
-
-    this.refs.name.focus();
-  }
-
-  render() {
-    let datas = this.state.datas;
-    return (
-      <div className="App">
-        <h2>{this.state.title}</h2>
-        <form ref="myForm" className="myForm">
-          <input type="text" ref="name" placeholder="your name" className="formField" />
-          <input type="text" ref="address" placeholder="your address" className="formField" />
-          <button onClick={(e)=>this.fSubmit(e)} className="myButton">Submit</button>
-        </form>
-        <pre>
-          {datas.map((data, i) =>
-            <li key={i} className="myList">
-              {i+1}.{data.name}, {data.address}
-              <button onClick={()=>this.fRemove(i)} className="myListButton">Remove</button>
-              <button onClick={()=>this.fEdit(i)} className="myListButton">Edit</button>
-            </li>
-          )}
-        </pre>
-      </div>
+  const modifierTodo = () => {
+    if (editInput.trim() === "" || editId === null) return;
+    const updatedTodos = todos.map((todo) =>
+      todo.id === editId ? { ...todo, text: editInput } : todo
     );
-  }
+    setTodos(updatedTodos);
+    setEditInput("");
+    setEditId(null);
+  };
+
+  const supprimerTodo = (id) => {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos);
+  };
+
+  const handleTodoInputChange = (e) => {
+    setTodoInput(e.target.value);
+  };
+
+  const handleEditInputChange = (e) => {
+    setEditInput(e.target.value);
+  };
+
+  const handleEditClick = (todoId, currentText) => {
+    setEditId(todoId);
+    setEditInput(currentText);
+  };
+
+  return (
+    <div>
+      <h1 className="bg-red-400">Liste des Todos</h1>
+
+      {todos.map((todo) => (
+        <div key={todo.id}>
+          <h2>{todo.text}</h2>
+          <button onClick={() => handleEditClick(todo.id, todo.text)}>
+            Modifier
+          </button>
+          <button onClick={() => supprimerTodo(todo.id)}>Supprimer</button>
+        </div>
+      ))}
+
+      <div>
+        <input
+          type="text"
+          value={todoInput}
+          onChange={handleTodoInputChange}
+          placeholder="Ajoutez un nouveau todo"
+        />
+        <button onClick={ajouterTodo}>Ajouter un Todo</button>
+      </div>
+
+      {editId !== null && (
+        <div>
+          <input
+            type="text"
+            value={editInput}
+            onChange={handleEditInputChange}
+            placeholder="Modifier ce todo"
+          />
+          <button onClick={modifierTodo}>Modifier</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App;
+export default Todo;
